@@ -547,7 +547,7 @@ int findValue(LinkList L,int value){
 
 int main(int argc, const char * argv[]) {
     // insert code here...
-    printf("Hello, World!\n");
+    printf("Hello, kongyulu!\n");
     
     LinkList head;
     int place,num;
