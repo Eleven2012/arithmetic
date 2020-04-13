@@ -453,7 +453,6 @@ Status ListInsert(LinkList *L, int place, int num){
         
     }else
     {
-        
         //如果插入的位置在其他位置;
         //1. 创建新结点temp,并判断是否创建成功,成功则赋值,否则返回ERROR;
         //2. 先找到插入的位置,如果超过链表长度,则自动插入队尾;
@@ -483,17 +482,12 @@ Status  LinkListDelete(LinkList *L,int place){
     //temp 指向链表首元结点
     temp = *L;
     if(temp == NULL) return ERROR;
-    
-    
     if (place == 1) {
-        
         //①.如果删除到只剩下首元结点了,则直接将*L置空;
         if((*L)->next == (*L)){
             (*L) = NULL;
             return OK;
         }
-        
-        
         //②.链表还有很多数据,但是删除的是首结点;
         //1. 找到尾结点, 使得尾结点next 指向头结点的下一个结点 target->next = (*L)->next;
         //2. 新结点做为头结点,则释放原来的头结点
@@ -506,20 +500,17 @@ Status  LinkListDelete(LinkList *L,int place){
         free(temp);
     }else
     {
-
         //如果删除其他结点--其他结点
         //1. 找到删除结点前一个结点target
         //2. 使得target->next 指向下一个结点
         //3. 释放需要删除的结点temp
-        for(i=1,target = *L;target->next != *L && i != place -1;target = target->next,i++) ;
-
+        for(i=1,target = *L;target->next != *L && i != place -1;target = target->next,i++);
             temp = target->next;
             target->next = temp->next;
             free(temp);
-        }
+    }
     
     return OK;
-    
 }
 
 
