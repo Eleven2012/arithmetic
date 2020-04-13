@@ -92,9 +92,58 @@ KStatus push(LinkStack *S, KStackElementType e) {
 }
 
 //7. 出栈
+KStatus pop(LinkStack *S, KStackElementType *e) {
+    LinkStackPtr p;
+    if (isEmpty(*S)) return ERROR;
+    //1. 将栈顶元素赋值给*e
+    *e = S->top->data;
+    //2. 将栈顶结点赋值给p
+    p = S->top;
+    //3. 使得栈顶指针下移一位, 指向后一结点
+    S->top = S->top->next;
+    //4. 释放p结点
+    free(p);
+    //栈大小减1
+    S->count--;
+    
+    return OK;
+}
+
+//8. 遍历栈
+KStatus traverse(LinkStack S) {
+    LinkStackPtr p = S.top;
+    printf("遍历栈元素：");
+    while (p) {
+        printf("%d ", p->data);
+        p = p->next;
+    }
+    printf("\n");
+    return OK;
+}
+
+//9. 单元测试
+void test() {
+    int j;
+    LinkStack s;
+    int e;
+    if(initStack(&s)==OK)
+        for(j=1;j<=10;j++)
+            push(&s,j);
+    printf("栈中元素依次为：");
+    traverse(s);
+    pop(&s,&e);
+    printf("弹出的栈顶元素 e=%d\n",e);
+    traverse(s);
+    printf("栈空否：%d(1:空 0:否)\n",isEmpty(s));
+    getTop(s,&e);
+    printf("栈顶元素 e=%d 栈的长度为%d\n",e,getLength(s));
+    clearStack(&s);
+    printf("清空栈后，栈空否：%d(1:空 0:否)\n",isEmpty(s));
+}
 
 int main(int argc, const char * argv[]) {
     // insert code here...
     printf("Hello, World!\n");
+    test();
     return 0;
 }
