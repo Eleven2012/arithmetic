@@ -162,7 +162,7 @@ void test1() {
     printf("测试mergeList：\n");
     
     KStatus iStatus;
-    LinkList La,Lb,Lc,L;
+    LinkList La,Lb,Lc;
     initList(&La);
     initList(&Lb);
     
@@ -261,8 +261,7 @@ void intersection(LinkList *La, LinkList *Lb, LinkList *Lc) {
 void test2() {
     printf("测试intersection：\n");
     
-    KStatus iStatus;
-    LinkList La,Lb,Lc,L;
+    LinkList La,Lb,Lc;
     initList(&La);
     initList(&Lb);
     printf("******题目2:********\n");
@@ -325,7 +324,7 @@ void test3() {
     printf("测试intersection：\n");
     
     KStatus iStatus;
-    LinkList La,Lb,Lc,L;
+    LinkList La,Lb,L;
     initList(&La);
     initList(&Lb);
     
@@ -391,7 +390,7 @@ void deleteMinMax(LinkList *L, int mink, int maxk) {
 void test4() {
     printf("测试deleteMinMax：\n");
     KStatus iStatus;
-    LinkList La,Lb,Lc,L;
+    LinkList La,Lb,L;
     initList(&La);
     initList(&Lb);
     
@@ -426,6 +425,50 @@ void test4() {
 时间复杂度: O(n); 时间复杂度:O(1);
 */
 
+//将数组R中的数据原地逆置
+void reverseList(int *pre, int left, int right) {
+    //i等于左边界left,j等于右边界right;
+    int i = left, j = right;
+    int temp;
+    
+    //交换pre[i] 和 pre[j] 的值
+    while (i < j) {
+        //交互值
+        temp = pre[i];
+        pre[i] = pre[j];
+        pre[j] = temp;
+        //i右移,j左移
+        i++;
+        j--;
+    }
+}
+
+void leftShift(int *pre, int n, int p) {
+    //将长度为n的数组pre 中的数据循环左移p个位置
+    if (p > 0 && p < n) {
+        //1. 将数组中所有的元素全部逆置
+        reverseList(pre, 0, n-1);
+        //2. 将前n-p个数据逆置
+        reverseList(pre, 0, n-p-1);
+        //3. 将后p个数据逆置
+        reverseList(pre, n-p, n-1);
+    }
+}
+
+void test5() {
+    printf("测试deleteMinMax：\n");
+    LinkList La,Lb;
+    initList(&La);
+    initList(&Lb);
+    
+    printf("******题目5:********\n");
+    int pre[10] = {0,1,2,3,4,5,6,7,8,9};
+    leftShift(pre, 10, 3);
+    for (int i=0; i < 10; i++) {
+        printf("%d ",pre[i]);
+    }
+    printf("\n");
+}
 
 
 /*
@@ -444,6 +487,58 @@ void test4() {
 空间复杂度: O(1)
 */
 
+//目标: 求整数序列A中的主元素;
+int findMainElement(int *A, int n) {
+    //count 用来计数
+    int count = 1;
+    //key 用来保存候选主元素, 初始A[0]
+    int key = A[0];
+    
+    //(1) 扫描数组,选取候选主元素
+    for (int i = 1; i < n; i++) {
+        //(2) 如果A[i]元素值 == key ,则候选主元素计数加1;
+        if (A[i] == key) {
+            count++;
+        } else {
+            //(3) 当前元素A[i] 非候选主元素,计数减1;
+            if (count > 0) {
+                count--;
+            }else {
+                //(4) 如果count 等于0,则更换候选主元素,重新计数
+                key = A[i];
+                count = 1;
+            }
+        }
+    }
+    
+    //如果count > 0,说明有候选元素，则统计候选元素元素出现的次数，否则说明没有候选元素。
+    if (count > 0) {
+        //(5) 统计候选元素的实际出现次数
+        for (int i = count = 0; i < n; i++) {
+            if(A[i] == key) count++;
+        }
+    }
+    //(6) 判断候选元素 是否满足主元素的条件，即出现次数大于数组长度的一半
+    if (count > n/2) return key;
+    
+    //(7) 没有找到主元素，返回-1
+    return -1;
+}
+
+void test6() {
+    printf("测试findMainElement：\n");
+    printf("******题目6:********\n");
+    int  A[] = {0,5,5,3,5,7,5,5};
+    int  B[] = {0,5,5,3,5,1,5,7};
+    int  C[] = {0,1,2,3,4,5,6,7};
+
+    int value = findMainElement(A, 8);
+    printf("数组A 主元素为: %d\n",value);
+    value = findMainElement(B, 8);
+    printf("数组B 主元素为(-1表示数组没有主元素): %d\n",value);
+    value = findMainElement(C, 8);
+    printf("数组C 主元素为(-1表示数组没有主元素): %d\n",value);
+}
 
 
 /*
@@ -461,8 +556,57 @@ void test4() {
 空间复杂度: O(n)
 */
 
+//目标: 删除单链表中绝对值相等的结点;
+void deleteSameNode(LinkList *L, int n) {
+    //1. 开辟辅助数组p.
+    int *p = malloc(sizeof(int) * n);
+    LinkList r = *L;
+    
+    //2.数组元素初始值置空
+    for (int i = 0; i < n; i++) {
+        *(p+1) = 0;
+    }
+    
+    //3.指针temp 指向首元结点
+    LinkList temp = (*L)->next;
+    
+    //4.遍历链表,直到temp = NULL;
+    while (temp) {
+        //5.如果该绝对值已经在结点上出现过,则删除该结点
+        if (p[abs(temp->data)] == 1) {
+            //删除结点
+            //5.1 临时指针r指向temp->next
+            r->next = temp->next;
+            //5.2 删除temp指向的结点
+            free(temp);
+            //5.3 temp 指向删除结点下一个结点
+            temp = r->next;
+        } else {
+            //6. 未出现过的结点,则将数组中对应位置置为1;
+            p[abs(temp->data)] = 1;
+            r = temp;
+            //继续遍历
+            temp = temp->next;
+        }
+    }
+}
 
+void test7() {
+    printf("删除单链表中绝对值相等的结点：\n");
+    LinkList L;
 
+    //21,-15,15,-7,15
+    printf("******题目7:********\n");
+    initList(&L);
+    insertElement(&L, 1, 21);
+    insertElement(&L, 1, -15);
+    insertElement(&L, 1, 15);
+    insertElement(&L, 1, -7);
+    insertElement(&L, 1, 15);
+
+    deleteSameNode(&L, 21);
+    traverseList(L);
+}
 
 
 int main(int argc, const char * argv[]) {
@@ -475,6 +619,12 @@ int main(int argc, const char * argv[]) {
     test3();
     
     test4();
+    
+    test5();
+    
+    test6();
+    
+    test7();
     
     return 0;
 }
