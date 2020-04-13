@@ -106,7 +106,10 @@ KStatus  clearList(LinkList *L) {
 /*
 题目 1:
 将2个递增的有序链表合并为一个有序链表; 要求结果链表仍然使用两个链表的存储空间,不另外占用其他的存储空间. 表中不允许有重复的数据
-
+ 例如:
+ La = {1,2,3}; Lb = {3,6,9};
+ Lc = {1,2,3,6,9}
+ 
 关键词:递增有序链表,不允许有重复数据,保留递增关系(后插法)
      不占用额外的存储空间指的是不能开辟新节点,赋值在链接到链表上;
 
@@ -118,6 +121,71 @@ KStatus  clearList(LinkList *L) {
 (5)最后释放链表Lb的头结点;
 
 */
+
+//目标:将2个递增的有序链表La,Lb 合并为一个递增的有序链表Lc
+void mergeList(LinkList *La, LinkList *Lb, LinkList *Lc) {
+    LinkList pa, pb, pc, temp;
+    //pa 是链表La的工作指针,pb 是链表Lb的工作指针, 初始化为首元结点;
+    pa = (*La)->next;
+    pb = (*Lb)->next;
+    
+    *Lc = pc = *La;
+    while (pa && pb) {
+        if (pa->data < pb->data) {
+            //取较小者La中的元素,将pa链接在pc的后面,pa指针后移
+            pc->next = pa;
+            pc = pa;
+            pa = pa->next;
+        } else if (pa->data > pb->data) {
+            //取较小者Lb的元素,将pb链接在pc后面, pb指针后移
+            pc->next = pb;
+            pc = pb;
+            pb = pb->next;
+        } else {
+            //相等时取La中的元素,删除Lb的元素;
+            pc->next = pa;
+            pc = pa;
+            pa = pa->next;
+            temp = pb->next;
+            free(pb);
+            pb = temp;
+        }
+    }
+    
+    //将非空表的剩余元素之间链接在Lc表的最后
+    pc->next = pa ? pa : pb;
+    //释放Lb的头结点
+    free(*Lb);
+}
+
+void test1() {
+    printf("测试mergeList：\n");
+    
+    KStatus iStatus;
+    LinkList La,Lb,Lc,L;
+    initList(&La);
+    initList(&Lb);
+    
+    printf("******题目1:********\n");
+    //设计2个递增链表La,Lb
+    for(int j = 10;j>=0;j-=2)
+    {
+        iStatus = insertElement(&La, 1, j);
+    }
+    printf("La:\n");
+    traverseList(La);
+
+    for(int j = 11;j>0;j-=2)
+    {
+        iStatus = insertElement(&Lb, 1, j);
+    }
+    printf("Lb:\n");
+    traverseList(Lb);
+
+    mergeList(&La, &Lb, &Lc);
+    printf("Lc:\n");
+    traverseList(Lc);
+}
 
 
 /*
@@ -139,7 +207,84 @@ Lc = {4,6,8}
 
 */
 
+//目标: 求2个递增的有序链表La,Lb的交集, 使用头指针Lc指向带回;
+void intersection(LinkList *La, LinkList *Lb, LinkList *Lc) {
+    LinkList pa, pb , pc, temp;
+    //pa 是链表La的工作指针,pb 是链表Lb的工作指针, 初始化为首元结点;La的头结点作为Lc的头结点;
+    pa = (*La)->next;
+    pb = (*Lb)->next;
+    *Lc = pc = *La;
+    
+    while (pa && pb) {
+        if (pa->data == pb->data) {
+            //相等,交集并入结果链表中;
+            //(1).取La中的元素,将pa链接到pc的后面,pa指针后移;
+            pc->next = pa;
+            pc = pa;
+            pa = pa->next;
+            //(2)删除Lb中对应相等的元素
+            temp = pb;
+            pb = pb->next;
+            free(temp);
+        } else if (pa->data < pb->data){
+            //删除较小值La的元素;
+            temp = pa;
+            pa = pa->next;
+            free(temp);
+        } else {
+            //删除较小值Lb的元素;
+            temp = pb;
+            pb = pb->next;
+            free(temp);
+        }
+    }
+    
+    //Lb为空,删除非空表La中的所有元素
+    while (pa) {
+        temp = pa;
+        pa = pa->next;
+        free(temp);
+    }
+    //La为空,删除非空表Lb中的所有元素
+    while (pb) {
+        temp = pb;
+        pb = pb->next;
+        free(temp);
+    }
+    //Lc尾结点置为空
+    pc->next = NULL;
+    //释放Lb的头结点
+    free(*Lb);
+}
 
+
+void test2() {
+    printf("测试intersection：\n");
+    
+    KStatus iStatus;
+    LinkList La,Lb,Lc,L;
+    initList(&La);
+    initList(&Lb);
+    printf("******题目2:********\n");
+    insertElement(&La, 1, 8);
+    insertElement(&La, 1, 6);
+    insertElement(&La, 1, 4);
+    insertElement(&La, 1, 2);
+    printf("La:\n");
+    traverseList(La);
+
+
+    insertElement(&Lb, 1, 10);
+    insertElement(&Lb, 1, 8);
+    insertElement(&Lb, 1, 6);
+    insertElement(&Lb, 1, 4);
+    printf("Lb:\n");
+    traverseList(Lb);
+
+    intersection(&La, &Lb, &Lc);
+    printf("Lc:\n");
+    traverseList(Lc);
+}
 
 
 /*
@@ -156,8 +301,47 @@ Lc = {4,6,8}
 (3)将摘取的结点插入到头结点之后,最后p指向新的待处理节点q(p=q);
 */
 
+//目的: 逆转带头结点单链表L;
+void inverse(LinkList *L) {
+    LinkList p,q;
+    //p指向首元结点;
+    p = (*L)->next;
+    //头结点的指针域置空
+    (*L)->next = NULL;
+    while (p) {
+        //q指向p的后继,用来保存下一个下一个要插入的节点，不然链表会断裂，找不到后续元素
+        q = p->next;
+        
+        //*p 插入到头结点之后;
+        p->next = (*L)->next;
+        (*L)->next = p;
+        
+        //处理下一个结点
+        p = q;
+    }
+}
 
+void test3() {
+    printf("测试intersection：\n");
+    
+    KStatus iStatus;
+    LinkList La,Lb,Lc,L;
+    initList(&La);
+    initList(&Lb);
+    
+    printf("******题目3:********\n");
+    initList(&L);
+    for(int j = 10;j>=0;j-=2)
+    {
+        iStatus = insertElement(&L, 1, j);
+    }
+    printf("L逆转前:\n");
+    traverseList(L);
 
+    inverse(&L);
+    printf("L逆转后:\n");
+    traverseList(L);
+}
 
 /*
 题目 4:
@@ -173,7 +357,57 @@ Lc = {4,6,8}
 (4)依次释放待删除结点的空间(介于pre和p之间的所有结点);
 */
 
+//目标: 删除递增有序链表L中值大于等于mink 和小于等于maxk的所有元素
+void deleteMinMax(LinkList *L, int mink, int maxk) {
+    LinkList p, q, pre,temp;
+    pre = *L;
+    //p指向首元结点
+    p = (*L)->next;
+    
+    //1.查找第一值大于mink的结点
+    while (p && p->data < mink) {
+        //pre指向前驱结点
+        pre = p;
+        p = p->next;
+    }
+    
+    //2.查找第一个值大于等于maxk的结点
+    while (p && p->data < maxk) {
+        p = p->next;
+    }
+    
+    //3.修改待删除的结点指针
+    q = pre->next;
+    pre->next = p;
+    
+    //释放q 到 p之间的所有结点
+    while (q != p) {
+        temp = q->next;
+        free(q);
+        q = temp;
+    }
+}
 
+void test4() {
+    printf("测试deleteMinMax：\n");
+    KStatus iStatus;
+    LinkList La,Lb,Lc,L;
+    initList(&La);
+    initList(&Lb);
+    
+    printf("******题目4:********\n");
+    initList(&L);
+    for(int j = 10;j>=0;j-=2)
+    {
+        iStatus = insertElement(&L, 1, j);
+    }
+    printf("L链表:\n");
+    traverseList(L);
+
+    deleteMinMax(&L, 4, 10);
+    printf("删除链表mink与maxk之间结点的链表:\n");
+    traverseList(L);
+}
 
 /*
 题目 5:
@@ -234,5 +468,13 @@ Lc = {4,6,8}
 int main(int argc, const char * argv[]) {
     // insert code here...
     printf("Hello, World!\n");
+    test1();
+    
+    test2();
+    
+    test3();
+    
+    test4();
+    
     return 0;
 }
